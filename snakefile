@@ -1,60 +1,40 @@
-#https://github.com/KonstantinUshenin/urfu_bioinf_2020/blob/master/Snakefile
-config: "config.json"
+#config: "config.yaml"
 
 import nibabel as nib
 import cv2
+import yaml
+import os
 
-def get_frames(patient_num):
-    res = os.listdir('/home/euloo/Documents/datasets/acdc/patient{}'.format(patient_num))
-    res = filter(lambda x: x.endswith('_gt.nii.gz'), res)
-    res = map(lambda x: x.split('_')[1].replace('frame', ''), res)
-    res = list(res)
-    return res
+file = open('config.yaml', 'r')
+config = yaml.load(file, Loader=yaml.FullLoader)
+path_acdc = config['acdc']['path_acdc']
+path_acdc = os.path.join(path_acdc, 'patient')
+path_acdc_processed = config['acdc']['path_processed']
 
-def get_patient_frame_pairs(patients):
-    pair_patient_frame = []
-    for patient in set(patients): # duplicates bug
-        frames = get_frames(patient)
-        for frame in frames:
-            pair_patient_frame.append((patient, frame))
-    return pair_patient_frame
+from helpers import get_patient_frame_pairs, get_frames
 
-
-nums0, nums1, frames = glob_wildcards("/home/euloo/Documents/datasets/acdc/patient{num1}/patient{num2}_frame{frame}_gt.nii.gz")
+nums0, nums1, frames = glob_wildcards(path_acdc + "{num1}/patient{num2}_frame{frame}_gt.nii.gz")
 
 
 pair_patient_frame = get_patient_frame_pairs(nums0)
-#print(pair_patient_frame)
 
 # a pseudo-rule that collects the target files
 rule all:
     input:
-        expand("/home/euloo/Documents/GitHub/heart/data/images/{pair[0]}_{pair[1]}.jpeg", pair = pair_patient_frame),
-        expand("/home/euloo/Documents/GitHub/heart/data/masks/{pair[0]}_{pair[1]}_gt.jpeg", pair = pair_patient_frame)
+        expand(path_acdc_processed + "/images/{pair[0]}_{pair[1]}.jpeg", pair = pair_patient_frame),
+        expand(path_acdc_processed + "/masks/{pair[0]}_{pair[1]}_gt.jpeg", pair = pair_patient_frame)
 
 # a general rule using wildcards that does the work
 rule acdc:
     input:
-        images = expand("/home/euloo/Documents/datasets/acdc/patient{pair[0]}/patient{pair[0]}_frame{pair[1]}.nii.gz", pair = pair_patient_frame),
-        masks = expand("/home/euloo/Documents/datasets/acdc/patient{pair[0]}/patient{pair[0]}_frame{pair[1]}_gt.nii.gz", pair = pair_patient_frame)
+        images = expand(path_acdc + "{pair[0]}/patient{pair[0]}_frame{pair[1]}.nii.gz", pair = pair_patient_frame),
+        masks = expand(path_acdc + "{pair[0]}/patient{pair[0]}_frame{pair[1]}_gt.nii.gz", pair = pair_patient_frame)
     output:
-        images = expand("/home/euloo/Documents/GitHub/heart/data/images/{pair[0]}_{pair[1]}.jpeg", pair = pair_patient_frame),
-        masks = expand("/home/euloo/Documents/GitHub/heart/data/masks/{pair[0]}_{pair[1]}_gt.jpeg", pair = pair_patient_frame)
+        images = expand(path_acdc_processed + "/images/{pair[0]}_{pair[1]}.jpeg", pair = pair_patient_frame),
+        masks = expand(path_acdc_processed + "/masks/{pair[0]}_{pair[1]}_gt.jpeg", pair = pair_patient_frame)
 
-    #script:
-    #    "scripts/imshow.py"
-    run:
-        for path, path2 in zip(input.images, output.images):
-            img = nib.load(path)
-            img = img.get_fdata()
-            img = img[:,:,0]
-            cv2.imwrite(path2, img)
+    script:
+        "scripts/scripts.py"
 
-        # TODO: make binary or 3 classes
-        for path, path2 in zip(input.masks, output.masks):
-            img = nib.load(path)
-            img = img.get_fdata()
-            img = img[:,:,0]
-            cv2.imwrite(path2, img)
 
 
