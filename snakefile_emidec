@@ -1,0 +1,30 @@
+configfile: "config.yaml"
+
+import nibabel as nib
+import cv2
+import os
+
+from helpers import get_patient_frame_pairs, get_frames
+
+nums0, nums1 = glob_wildcards(config['emidec']['path_emidec'] + "/Case_N{num1}/Contours/Case_N{num2}.nii.gz")
+
+#pair_patient_frame = get_patient_frame_pairs(nums0)
+
+# a pseudo-rule that collects the target files
+rule all:
+    input:
+        expand(config['emidec']['path_processed'] + "/images/{num}.jpeg", num = nums0),
+        expand(config['emidec']['path_processed'] + "/masks/{num}_gt.jpeg", num = nums0)
+
+
+# a general rule using wildcards that does the work
+rule acdc:
+    input:
+        images = expand(config['emidec']['path_emidec'] + "/Case_N{num}/Images/Case_N{num}.nii.gz", num = nums0),
+        masks = expand(config['emidec']['path_emidec'] + "/Case_N{num}/Contours/Case_N{num}.nii.gz", num = nums0)
+    output:
+        images = expand(config['emidec']['path_processed'] + "/images/{num}.jpeg", num = nums0),
+        masks = expand(config['emidec']['path_processed'] + "/masks/{num}_gt.jpeg", num = nums0)
+
+    script:
+        "scripts/scripts.py"
