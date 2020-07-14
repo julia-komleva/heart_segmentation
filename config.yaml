@@ -1,6 +1,6 @@
 acdc:
-  path_acdc: "/home/euloo/Documents/datasets/acdc/"
+  path_acdc: "/home/euloo/Documents/datasets/acdc"
   path_processed: "/home/euloo/Documents/datasets/heart_segmentation/acdc"
 emidec:
-  path_emidec: "/home/euloo/Documents/datasets/emidec-dataset-1.0.1/"
+  path_emidec: "/home/euloo/Documents/datasets/emidec-dataset-1.0.1"
   path_processed: "/home/euloo/Documents/datasets/heart_segmentation/emidec"
