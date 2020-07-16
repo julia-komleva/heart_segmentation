@@ -1,30 +1,27 @@
 configfile: "config.yaml"
 
-import nibabel as nib
-import cv2
-import os
 
-from helpers import get_patient_frame_pairs, get_frames
+# /home/euloo/Documents/datasets/emidec-dataset-1.0.1/Case_P081/Contours/Case_P081.nii.gz
 
-nums0, nums1 = glob_wildcards(config['emidec']['path_emidec'] + "/Case_N{num1}/Contours/Case_N{num2}.nii.gz")
+typenum0, typenum1 = glob_wildcards(config['emidec']['path_emidec'] + "/Case_{type1, [PN]\d+}/Contours/Case_{type2, [PN]\d+}.nii.gz")
 
 #pair_patient_frame = get_patient_frame_pairs(nums0)
 
 # a pseudo-rule that collects the target files
-rule all:
-    input:
-        expand(config['emidec']['path_processed'] + "/images/{num}.jpeg", num = nums0),
-        expand(config['emidec']['path_processed'] + "/masks/{num}_gt.jpeg", num = nums0)
+#rule all:
+#    input:
+#        expand(config['emidec']['path_processed'] + "/images/{num}.jpeg", num = nums0),
+#        expand(config['emidec']['path_processed'] + "/masks/{num}_gt.jpeg", num = nums0)
 
 
 # a general rule using wildcards that does the work
-rule acdc:
+rule emidec:
     input:
-        images = expand(config['emidec']['path_emidec'] + "/Case_N{num}/Images/Case_N{num}.nii.gz", num = nums0),
-        masks = expand(config['emidec']['path_emidec'] + "/Case_N{num}/Contours/Case_N{num}.nii.gz", num = nums0)
+        images = expand(config['emidec']['path_emidec'] + "/Case_{typenum}/Images/Case_{typenum}.nii.gz", typenum = typenum0),
+        masks = expand(config['emidec']['path_emidec'] + "/Case_{typenum}/Contours/Case_{typenum}.nii.gz", typenum = typenum0)
     output:
-        images = expand(config['emidec']['path_processed'] + "/images/{num}.jpeg", num = nums0),
-        masks = expand(config['emidec']['path_processed'] + "/masks/{num}_gt.jpeg", num = nums0)
+        images = expand(config['emidec']['path_processed'] + "/images/{typenum}_", typenum = typenum0),
+        masks = expand(config['emidec']['path_processed'] + "/masks/{typenum}_", typenum = typenum0)
 
     script:
         "scripts/scripts.py"
