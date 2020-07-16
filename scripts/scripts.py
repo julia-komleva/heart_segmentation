@@ -7,7 +7,7 @@ def nib_to_image():
         img = nib.load(path_in)
         img = img.get_fdata().astype(int)
         n = img.shape[2]
-        img = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX) # worse
+        #img = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX) # worse
 
         for i in range(n):
             slice = img[:, :, i]
