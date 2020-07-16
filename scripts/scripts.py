@@ -7,11 +7,11 @@ def nib_to_image():
         img = nib.load(path_in)
         img = img.get_fdata().astype(int)
         n = img.shape[2]
-        m = img.max()
-        if m > 255:
-            img //= 16  # emidec depth
+        img = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX) # worse
+
         for i in range(n):
             slice = img[:, :, i]
+            slice = cv2.normalize(slice, None, 0, 255, cv2.NORM_MINMAX)  # worse
             path = path_out + str(i) + '.png'
             cv2.imwrite(path, slice)  # problem
         # plt.imsave(path_out, img, format='jpeg', cmap='gray')

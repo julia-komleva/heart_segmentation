@@ -23,3 +23,4 @@ def get_patient_frame_pairs(patients):
         for frame in frames:
             pair_patient_frame.append((patient, frame))
     return pair_patient_frame
+
