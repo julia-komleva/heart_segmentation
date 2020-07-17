@@ -1,8 +1,5 @@
 configfile: "config.yaml"
 
-
-# /home/euloo/Documents/datasets/emidec-dataset-1.0.1/Case_P081/Contours/Case_P081.nii.gz
-
 typenum0, typenum1 = glob_wildcards(config['emidec']['path_emidec'] + "/Case_{type1, [PN]\d+}/Contours/Case_{type2, [PN]\d+}.nii.gz")
 
 #pair_patient_frame = get_patient_frame_pairs(nums0)
