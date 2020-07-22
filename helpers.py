@@ -1,9 +1,7 @@
-# config: "config.yaml"
-
 import yaml
 import os
-
-file = open('config.yaml', 'r')
+import nibabel as nib
+file = open('config.yaml', 'r') # rewrite
 config = yaml.load(file, Loader=yaml.FullLoader)
 
 def get_frames(patient_num):
@@ -16,11 +14,25 @@ def get_frames(patient_num):
     res = list(res)
     return res
 
+#ef get_patient_frame_pairs(patients):
+#    pair_patient_frame = []
+#   for patient in set(patients): # duplicates bug
+#        frames = get_frames(patient)
+#        for frame in frames:
+#            pair_patient_frame.append((patient, frame))
+#    return pair_patient_frame
+
+
+
 def get_patient_frame_pairs(patients):
     pair_patient_frame = []
     for patient in set(patients): # duplicates bug
         frames = get_frames(patient)
         for frame in frames:
-            pair_patient_frame.append((patient, frame))
+            img = nib.load(config['acdc']['path_acdc'] + "/patient"+patient+"/patient"+patient+"_frame"+frame+"_gt.nii.gz") # rewrite to join
+            img = img.get_fdata().astype(int)
+            n = img.shape[2]
+            for i in range(n):
+                pair_patient_frame.append((patient, frame,str(i)))
     return pair_patient_frame
 
