@@ -1,24 +1,27 @@
 configfile: "config.yaml"
+import nibabel as nib
+
+pair_patient_frame=[]
 
 typenum0, typenum1 = glob_wildcards(config['emidec']['path_emidec'] + "/Case_{type1, [PN]\d+}/Contours/Case_{type2, [PN]\d+}.nii.gz")
 
-#pair_patient_frame = get_patient_frame_pairs(nums0)
-
-# a pseudo-rule that collects the target files
-#rule all:
-#    input:
-#        expand(config['emidec']['path_processed'] + "/images/{num}.jpeg", num = nums0),
-#        expand(config['emidec']['path_processed'] + "/masks/{num}_gt.jpeg", num = nums0)
+for patient in typenum0:
+        img = nib.load(config['emidec']['path_emidec'] + "/Case_"+patient+"/Contours"+"/Case_"+patient+".nii.gz")
+        img = img.get_fdata().astype(int)
+        n = img.shape[2]
+        for i in range(n):
+            pair_patient_frame.append((patient,str(i)))
 
 
 # a general rule using wildcards that does the work
 rule emidec:
+    params:
+        dataset= "acdc"
     input:
-        images = expand(config['emidec']['path_emidec'] + "/Case_{typenum}/Images/Case_{typenum}.nii.gz", typenum = typenum0),
-        masks = expand(config['emidec']['path_emidec'] + "/Case_{typenum}/Contours/Case_{typenum}.nii.gz", typenum = typenum0)
+        images = expand(config['emidec']['path_emidec'] + "/Case_{typenum[0]}/Images/Case_{typenum[0]}.nii.gz", typenum = pair_patient_frame),
+        masks = expand(config['emidec']['path_emidec'] + "/Case_{typenum[0]}/Contours/Case_{typenum[0]}.nii.gz", typenum = pair_patient_frame)
     output:
-        images = expand(config['emidec']['path_processed'] + "/images/{typenum}_", typenum = typenum0),
-        masks = expand(config['emidec']['path_processed'] + "/masks/{typenum}_", typenum = typenum0)
-
+        images = expand(config['emidec']['path_processed'] + "/images/{typenum[0]}_{typenum[1]}.png", typenum = pair_patient_frame),
+        masks = expand(config['emidec']['path_processed'] + "/masks/{typenum[0]}_{typenum[1]}_gt.png", typenum = pair_patient_frame)
     script:
         "scripts/scripts.py"
